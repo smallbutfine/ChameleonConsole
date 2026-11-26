@@ -28,6 +28,9 @@ re-calibrated without touching code.
   frames), alpha-blended over the background (round knobs, no black box).
 - **Ballistic VU** with per-era calibration via `vu.ini` (`min_db`, `max_db`,
   `frames`).
+- **Per-channel analog drift** — a per-era `inaccuracy.ini` percentage makes
+  every channel's components deviate slightly (unique per instance), like real
+  analogue hardware.
 - **Per-knob taper** via `knobs.ini` (`linear` / `log` / `reverse`) — "tune the
   desk" like an old-school engineer.
 - **Clean, side-by-side install** — per-user or system-wide, CLAP and/or VST3,
@@ -101,6 +104,7 @@ Assets/<era>/
   knobs/<function>.png  vertical knob sprite-strip (50×50 frames)
   vu.png                vertical VU sprite-strip (90×70 frames)
   vu.ini                VU calibration: min_db, max_db, frames
+  inaccuracy.ini        per-era component drift (pct) - see below
   knobs.ini             per-knob taper: linear | log | reverse
 ```
 
