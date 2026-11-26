@@ -13,16 +13,23 @@ Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
 
+[Types]
+Name: "full"; Description: "Full (CLAP + VST3)"
+Name: "clap"; Description: "CLAP only"
+Name: "vst3"; Description: "VST3 only"
+Name: "custom"; Description: "Custom"; Flags: iscustom
+
+[Components]
+Name: "clap"; Description: "CLAP plugin (with artwork)"; Types: full clap custom
+Name: "vst3"; Description: "VST3 plugin"; Types: full vst3 custom
+
 [Files]
 ; CLAP plugin + its assets (assets must sit next to the .clap for DllDir)
-Source: "..\clap_skeleton.clap"; DestDir: "{code:GetCLAPDir}"; Flags: ignoreversion
-Source: "..\Assets\*"; DestDir: "{code:GetCLAPDir}\Assets"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "..\README.md"; DestDir: "{code:GetCLAPDir}"; Flags: ignoreversion
+Source: "..\clap_skeleton.clap"; DestDir: "{code:GetCLAPDir}"; Components: clap; Flags: ignoreversion
+Source: "..\Assets\*"; DestDir: "{code:GetCLAPDir}\Assets"; Components: clap; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\README.md"; DestDir: "{code:GetCLAPDir}"; Components: clap; Flags: ignoreversion
 ; VST3 proxy goes to its own standard folder
-Source: "..\clap_skeleton.vst3"; DestDir: "{code:GetVST3Dir}"; Flags: ignoreversion
-
-[Icons]
-Name: "{group}\ChameleonConsole Readme"; Filename: "{app}\README.md"
+Source: "..\clap_skeleton.vst3"; DestDir: "{code:GetVST3Dir}"; Components: vst3; Flags: ignoreversion
 
 [Code]
 { Per-user (no admin) or system-wide (admin), chosen via the standard
