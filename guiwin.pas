@@ -202,6 +202,7 @@ begin
             era := (Round(gw^.console^) + 1) mod 17;
             gw^.console^ := era;
             gw^.loadedConsole := -1;
+            RequestCallbackHost(gw^.host);
             InvalidateRect(hwnd, nil, True);
           end;
         end;
