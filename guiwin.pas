@@ -213,7 +213,7 @@ begin
       GetObject(HBITMAP(gw^.vuBmp), SizeOf(BITMAP), @bm);
       frames := bm.bmWidth div bm.bmHeight; if frames < 1 then frames := 1;
       if gw^.vu <> nil then vuFrame := Round(Clamp01(gw^.vu^) * (frames-1)) else vuFrame := 0;
-      DrawSprite(dc, HBITMAP(gw^.vuBmp), vuFrame, frames, 13, 8);
+      DrawSprite(dc, HBITMAP(gw^.vuBmp), vuFrame, frames, 0, 8);
     end;
 
     if gw^.console <> nil then
