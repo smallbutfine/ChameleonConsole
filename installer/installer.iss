@@ -25,12 +25,13 @@ Source: "..\clap_skeleton.vst3"; DestDir: "{code:GetVST3Dir}"; Flags: ignorevers
 Name: "{group}\ChameleonConsole Readme"; Filename: "{app}\README.md"
 
 [Code]
-{ Per-user (no admin) or system-wide (admin) - chosen by the user via the
-  standard "install for all users / just me" dialog. }
+{ Per-user (no admin) or system-wide (admin), chosen via the standard
+  all-users / just-me dialog. Uses only confirmed Inno constants:
+  commonpf64 is C:\Program Files (64-bit); append the literal Common Files. }
 function GetCLAPDir(Param: String): String;
 begin
   if IsAdminInstallMode then
-    Result := ExpandConstant('{commonfiles}') + '\CLAP\ChameleonConsole'
+    Result := ExpandConstant('{commonpf64}') + '\Common Files\CLAP\ChameleonConsole'
   else
     Result := ExpandConstant('{localappdata}') + '\Programs\Common\CLAP\ChameleonConsole';
 end;
@@ -38,7 +39,7 @@ end;
 function GetVST3Dir(Param: String): String;
 begin
   if IsAdminInstallMode then
-    Result := ExpandConstant('{commonfiles}') + '\VST3'
+    Result := ExpandConstant('{commonpf64}') + '\Common Files\VST3'
   else
     Result := ExpandConstant('{localappdata}') + '\Programs\Common\VST3';
 end;
