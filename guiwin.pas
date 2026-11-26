@@ -16,7 +16,7 @@ type
     request_cb: procedure(host: pointer); cdecl;
     loadedConsole: Integer;
     bgBmp: pointer;
-    knobBmp: pointer;      // shared knob sprite strip (placeholder)
+    knobBmps: array[0..13] of pointer; // per-function knob sprite strips
     vuBmp: pointer;        // VU sprite strip
     dragging: Boolean;
     dragParam: Integer;
@@ -141,10 +141,6 @@ var
   cx, cy: Integer;
 begin
   { lazy-load artwork: knob + vu once, background per console era }
-  if gw^.knobBmp = nil then
-    path := AssetPath('knob.png'); gw^.knobBmp := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
-  if gw^.vuBmp = nil then
-    path := AssetPath('vu.png'); gw^.vuBmp := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
   if gw^.console <> nil then
   begin
     era := Round(gw^.console^);
@@ -154,8 +150,18 @@ begin
     begin
       gw^.loadedConsole := era;
       if gw^.bgBmp <> nil then DeleteObject(HBITMAP(gw^.bgBmp));
-      path := AssetPath('bg_' + EraName(era) + '.png');
+      if gw^.vuBmp <> nil then DeleteObject(HBITMAP(gw^.vuBmp));
+      for i := 0 to NUM_KNOBS-1 do
+        if gw^.knobBmps[i] <> nil then DeleteObject(HBITMAP(gw^.knobBmps[i]));
+      path := AssetPath(EraName(era) + '\background.png');
       gw^.bgBmp := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
+      path := AssetPath(EraName(era) + '\vu.png');
+      gw^.vuBmp := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
+      for i := 0 to NUM_KNOBS-1 do
+      begin
+        path := AssetPath(EraName(era) + '\knobs\' + KnobLayout[i].name + '.png');
+        gw^.knobBmps[i] := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
+      end;
     end;
   end;
 
@@ -173,18 +179,16 @@ begin
     end;
 
     { knobs }
-    if gw^.knobBmp <> nil then
+    for i := 0 to NUM_KNOBS-1 do
     begin
-      GetObject(HBITMAP(gw^.knobBmp), SizeOf(BITMAP), @bm);
-      frames := bm.bmWidth div (bm.bmHeight) ; if frames < 1 then frames := 1;
-      for i := 0 to NUM_KNOBS-1 do
-      begin
-        if gw^.params <> nil then
-          knobFrame := Round(Clamp01(PSampleF(gw^.params)[KnobLayout[i].param]) * (frames-1))
-        else knobFrame := 0;
-        DrawSprite(dc, HBITMAP(gw^.knobBmp), knobFrame, frames,
-          KnobLayout[i].x, KnobLayout[i].y);
-      end;
+      if gw^.knobBmps[i] = nil then Continue;
+      GetObject(HBITMAP(gw^.knobBmps[i]), SizeOf(BITMAP), @bm);
+      frames := bm.bmWidth div bm.bmHeight; if frames < 1 then frames := 1;
+      if gw^.params <> nil then
+        knobFrame := Round(Clamp01(PSampleF(gw^.params)[KnobLayout[i].param]) * (frames-1))
+      else knobFrame := 0;
+      DrawSprite(dc, HBITMAP(gw^.knobBmps[i]), knobFrame, frames,
+        KnobLayout[i].x, KnobLayout[i].y);
     end;
 
     { VU on top }
@@ -268,10 +272,11 @@ begin
 end;
 
 procedure GuiDestroy(var gw: TGuiWin);
+var i: Integer;
 begin
   if gw.hwnd<>nil then begin DestroyWindow(HWND(gw.hwnd)); gw.hwnd:=nil; end;
   if gw.bgBmp<>nil then begin DeleteObject(HBITMAP(gw.bgBmp)); gw.bgBmp:=nil; end;
-  if gw.knobBmp<>nil then begin DeleteObject(HBITMAP(gw.knobBmp)); gw.knobBmp:=nil; end;
+  for i:=0 to NUM_KNOBS-1 do if gw.knobBmps[i]<>nil then begin DeleteObject(HBITMAP(gw.knobBmps[i])); gw.knobBmps[i]:=nil; end;
   if gw.vuBmp<>nil then begin DeleteObject(HBITMAP(gw.vuBmp)); gw.vuBmp:=nil; end;
 end;
 

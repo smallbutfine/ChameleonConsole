@@ -79,7 +79,7 @@ begin
   pd^.dsp := PDSPInstance(instantiate_dsp(nil, 44100.0, nil, nil));
   for i:=0 to NUM_PARAMS-1 do pd^.params[i] := 0;
   pd^.gw.hwnd:=nil; pd^.gw.gain:=nil; pd^.gw.console:=nil; pd^.gw.params:=nil; pd^.gw.vu:=nil;
-  pd^.gw.loadedConsole:=-1; pd^.gw.bgBmp:=nil; pd^.gw.knobBmp:=nil; pd^.gw.vuBmp:=nil;
+  pd^.gw.loadedConsole:=-1; pd^.gw.bgBmp:=nil; pd^.gw.vuBmp:=nil; for i:=0 to 13 do pd^.gw.knobBmps[i]:=nil;
   pd^.gw.dragging:=False; pd^.gw.dragParam:=0; pd^.gw.startY:=0; pd^.gw.startVal:=0; pd^.gw.host:=nil;
   New(p); FillChar(p^,SizeOf(clap_plugin_t),0);
   p^.desc:=@g_descriptor; p^.plugin_data:=pd;
