@@ -23,6 +23,9 @@ Name: "custom"; Description: "Custom"; Flags: iscustom
 Name: "clap"; Description: "CLAP plugin (with artwork)"; Types: full clap custom
 Name: "vst3"; Description: "VST3 plugin"; Types: full vst3 custom
 
+[Tasks]
+Name: "clean"; Description: "Clean install (remove the previous version first)"
+
 [Files]
 ; CLAP plugin + its assets (assets must sit next to the .clap for DllDir)
 Source: "..\ChameleonConsole.clap"; DestDir: "{code:GetCLAPDir}"; Components: clap; Flags: ignoreversion
@@ -36,22 +39,25 @@ Source: "..\Assets\*"; DestDir: "{code:GetVST3Dir}\Assets"; Components: vst3; Fl
 { Per-user (no admin) or system-wide (admin), chosen via the standard
   all-users / just-me dialog. Uses only confirmed Inno constants:
   commonpf64 is C:\Program Files (64-bit); append the literal Common Files. }
-{ Uninstall any previous version (same AppId) before installing. }
-function InitializeSetup(): Boolean;
+{ Clean install: remove the previous version first (only when the
+  clean task is selected). Runs after the tasks page. }
+procedure CurStepChanged(CurStep: TSetupStep);
 var
   RegKey: String;
   UninstallPath: String;
   ResultCode: Integer;
 begin
-  Result := True;
-  RegKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + ExpandConstant('{#SetupSetting("AppId")}') + '_is1';
-  if not RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'UninstallString', UninstallPath) then
-    RegQueryStringValue(HKEY_CURRENT_USER, RegKey, 'UninstallString', UninstallPath);
-  if UninstallPath <> '' then
+  if (CurStep = ssInstall) and WizardIsTaskSelected('clean') then
   begin
-    UninstallPath := RemoveQuotes(UninstallPath);
-    Exec(UninstallPath, '/SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-    Sleep(1000);
+    RegKey := 'Software\Microsoft\Windows\CurrentVersion\Uninstall\' + ExpandConstant('{#SetupSetting("AppId")}') + '_is1';
+    if not RegQueryStringValue(HKEY_LOCAL_MACHINE, RegKey, 'UninstallString', UninstallPath) then
+      RegQueryStringValue(HKEY_CURRENT_USER, RegKey, 'UninstallString', UninstallPath);
+    if UninstallPath <> '' then
+    begin
+      UninstallPath := RemoveQuotes(UninstallPath);
+      Exec(UninstallPath, '/SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Sleep(1000);
+    end;
   end;
 end;
 
