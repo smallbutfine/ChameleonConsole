@@ -18,6 +18,7 @@ type
     bgBmp: pointer;
     knobBmps: array[0..13] of pointer; // per-function knob sprite strips
     vuBmp: pointer;        // VU sprite strip
+    vuMinDb: Double; vuMaxDb: Double; vuFrames: Integer;
     dragging: Boolean;
     dragParam: Integer;
     startY: Integer;
@@ -34,7 +35,7 @@ procedure GuiPump(var gw: TGuiWin);
 implementation
 
 {$IFDEF MSWINDOWS}
-uses Windows, SysUtils, hostcb, pngload;
+uses Windows, SysUtils, hostcb, pngload, IniFiles;
 
 const
   GWLP_USERDATA = -21;
@@ -143,6 +144,21 @@ begin
     12: Result:='Studer 169'; 13: Result:='Polar Nordic'; 14: Result:='Harrison 32C';
     15: Result:='Trident A-Range'; 16: Result:='MCI JH Series';
   else Result:='Neve 1073'; end;
+end;
+
+procedure ReadVuConfig(path: ShortString; var minDb, maxDb: Double; var frames: Integer);
+var ini: TIniFile;
+begin
+  minDb := -40; maxDb := 3; frames := 101;
+  if (path <> '') and FileExists(path) then
+  begin
+    ini := TIniFile.Create(path);
+    try
+      minDb := ini.ReadFloat('vu', 'min_db', -40);
+      maxDb := ini.ReadFloat('vu', 'max_db', 3);
+      frames := ini.ReadInteger('vu', 'frames', 101);
+    finally ini.Free; end;
+  end;
 end;
 
 procedure PaintClient(hwnd: HWND; gw: PGuiWin);
