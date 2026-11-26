@@ -3,174 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChameleonSkeleton — Documentation</title>
+<title>ChameleonConsole — Documentation</title>
 <link rel="stylesheet" href="style.css">
-  <style>
-.crossbar { background:#0d1117; border-bottom:1px solid #30363d; padding:10px 20px; text-align:center; font-size:0.85em; letter-spacing:0.5px; }
-.crossbar a { color:#8b949e; text-decoration:none; padding:4px 10px; transition:color 0.2s; font-weight:500; }
-.crossbar a:hover { color:#58a6ff; }
-.crossbar-sep { color:#30363d; margin:0 6px; }
-  </style>
+<style>
+.crossbar{background:#0d1117;border-bottom:1px solid #30363d;padding:10px 20px;text-align:center;font-size:.85em;letter-spacing:.5px}
+.crossbar a{color:#8b949e;text-decoration:none;padding:4px 10px;transition:color .2s;font-weight:500}
+.crossbar a:hover{color:#58a6ff}.crossbar-sep{color:#30363d;margin:0 6px}
+</style>
 </head>
 <body>
 <div class="crossbar">
-  <a href="https://smallbutfine.github.io/ChameleonTools/">ChameleonTools</a>
-  <span class="crossbar-sep">|</span>
-  <a href="https://smallbutfine.github.io/ChameleonDrummer/">Drummer</a>
-  <span class="crossbar-sep">|</span>
-  <a href="https://smallbutfine.github.io/TaraDSP/">TaraDSP</a>
-  <span class="crossbar-sep">|</span>
-  <a href="https://smallbutfine.github.io/stringselectorapp/">StringSelector</a>
-  <span class="crossbar-sep">|</span>
-  <a href="https://smallbutfine.github.io/ChameleonRecorder/">Recorder</a>
-  <span class="crossbar-sep">|</span>
-  <a href="https://smallbutfine.github.io/ChameleonSkeleton/">Skeleton</a>
+  <a href="https://smallbutfine.github.io/ChameleonTools/">ChameleonTools</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/ChameleonDrummer/">Drummer</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/TaraDSP/">TaraDSP</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/stringselectorapp/">StringSelector</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/ChameleonRecorder/">Recorder</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/ChameleonConsole/">Console</a>
 </div>
+<header><div class="container">
+  <h1><img src="chameleon.jpg" alt="Chameleon" style="width:48px;height:48px;border-radius:50%;vertical-align:middle;margin-right:10px;border:2px solid #30363d;"/>CHAMELEON<span class="accent">CONSOLE</span></h1>
+  <p class="subtitle">Documentation</p>
+  <nav><a href="index.html">Overview</a><a href="manual.html">Manual</a></nav>
+</div></header>
 
-<header>
-  <div class="container">
-    <h1><img src="chameleon.jpg" alt="Chameleon" style="width:48px; height:48px; border-radius:50%; vertical-align:middle; margin-right:10px; border:2px solid #30363d;" /><span class="logo">◉</span> CHAMELEON<span class="accent">SKELETON</span></h1>
-    <p class="subtitle">Documentation</p>
-    <nav>
-      <a href="index.html">Overview</a>
-      <a href="#layout">Layout</a>
-      <a href="#params">Parameters</a>
-      <a href="#gui">GUI</a>
-      <a href="#state">State</a>
-      <a href="#build">Build</a>
-      <a href="#install">Install</a>
-      <span style="width:100%"></span>
-      <a href="de/docs.html">DE</a>
-      <a href="es/docs.html">ES</a>
-      <a href="fr/docs.html">FR</a>
-      <a href="pt/docs.html">PT</a>
-      <a href="ru/docs.html">RU</a>
-      <a href="zh/docs.html">ZH</a>
-    </nav>
-  </div>
-</header>
+<section><div class="container">
+  <h2>Project Layout</h2>
+  <table>
+    <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td><code>clap.pas</code></td><td>CLAP ABI (core + params + events + gui + state).</td></tr>
+      <tr><td><code>clapentry.pas</code></td><td>Exports <code>clap_entry</code>.</td></tr>
+      <tr><td><code>clapplugin.pas</code></td><td>Entry/factory/plugin, 15 params, state, GUI wiring, DSP glue.</td></tr>
+      <tr><td><code>ChannelStripDSP.pas</code></td><td>The channelstrip DSP (ZDF EQ/HPF/LPF, oversampling, transformer/tape, VU).</td></tr>
+      <tr><td><code>guiwin.pas</code></td><td>Win32 embedded strip (per-era bg, sprite knobs, VU, era label).</td></tr>
+      <tr><td><code>pngload.pas</code></td><td>PNG → HBITMAP (fcl-image).</td></tr>
+      <tr><td><code>hostcb.pas</code></td><td>FPC-mode cdecl helper + host notify.</td></tr>
+      <tr><td><code>build_all.bat</code></td><td>Multi-target build + VST3 wrapper + deploy.</td></tr>
+    </tbody>
+  </table>
+</div></section>
 
-<section id="layout">
-  <div class="container">
-    <h2>Project Layout</h2>
-    <table>
-      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
-      <tbody>
-        <tr><td><code>clap.pas</code></td><td>CLAP ABI types (core + params + events + gui + state), translated from the official headers.</td></tr>
-        <tr><td><code>clapentry.pas</code></td><td>Exports the <code>clap_entry</code> symbol (clean C name on all targets).</td></tr>
-        <tr><td><code>clapplugin.pas</code></td><td>Entry, factory, plugin callbacks, params, state, GUI wiring, and the gain DSP.</td></tr>
-        <tr><td><code>guiwin.pas</code></td><td>Embedded window: Win32 (GDI), Linux (X11), macOS (Cocoa), with non-Windows stubs.</td></tr>
-        <tr><td><code>pngload.pas</code></td><td>PNG → HBITMAP decoder (fcl-image) for the Win32 GUI.</td></tr>
-        <tr><td><code>hostcb.pas</code></td><td>FPC-mode helper to call <code>cdecl</code> procedure-variables (works around an FPC Delphi-mode bug).</td></tr>
-        <tr><td><code>clap_skeleton.lpr / .lpi</code></td><td>The library project (Lazarus).</td></tr>
-        <tr><td><code>build_all.bat</code></td><td>Multi-target build + deploy + optional VST3 wrapper.</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
+<section><div class="container">
+  <h2>Parameters (clap.params)</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Name</th><th>Range</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>Console</td><td>0–16 (era)</td></tr>
+      <tr><td>1</td><td>Trim</td><td>-24…24 dB</td></tr>
+      <tr><td>2</td><td>Drive</td><td>0–100 %</td></tr>
+      <tr><td>3</td><td>HPF</td><td>0–500 Hz</td></tr>
+      <tr><td>4</td><td>LPF</td><td>1k–20k Hz</td></tr>
+      <tr><td>5–10</td><td>EQ Lo/Mid/Hi Freq/Gain</td><td>see manual</td></tr>
+      <tr><td>11</td><td>Lux</td><td>0–1</td></tr>
+      <tr><td>12</td><td>Gloss</td><td>0–1</td></tr>
+      <tr><td>13</td><td>Tape</td><td>0/1</td></tr>
+      <tr><td>14</td><td>Volume</td><td>-24…12 dB</td></tr>
+    </tbody>
+  </table>
+  <p>All automatable. GUI changes notify the host via <code>request_callback</code>; incoming
+  <code>PARAM_VALUE</code> events apply in <code>process()</code>/<code>flush()</code>.</p>
+</div></section>
 
-<section id="params">
-  <div class="container">
-    <h2>Parameters (clap.params)</h2>
-    <p>One automatable parameter:</p>
-    <table>
-      <thead><tr><th>Id</th><th>Name</th><th>Range</th><th>Default</th></tr></thead>
-      <tbody>
-        <tr><td>0</td><td>Gain</td><td>0.0 – 1.0</td><td>0.5</td></tr>
-      </tbody>
-    </table>
-    <p>Incoming <code>CLAP_EVENT_PARAM_VALUE</code> events are applied in <code>process()</code> and
-    <code>flush()</code>. When the GUI knob changes the gain, the plugin calls
-    <code>host-&gt;request_callback</code>; <code>on_main_thread</code> then requests a process cycle,
-    during which <code>process()</code> emits <code>PARAM_GESTURE_BEGIN</code> /
-    <code>PARAM_VALUE</code> / <code>PARAM_GESTURE_END</code> to <code>out_events</code> so the DAW
-    value tracks the knob.</p>
-  </div>
-</section>
+<section><div class="container">
+  <h2>GUI &amp; Artwork</h2>
+  <p>Per-era assets in <code>assets/&lt;era&gt;/</code>: <code>background.png</code> (90×852),
+  <code>knobs/&lt;function&gt;.png</code> (50×5050 vertical sprite strips, 101 frames),
+  <code>vu.png</code> (90×7070, 101 frames). Loaded DLL-relative. Click the era label under the VU to
+  switch era; drag a knob to change its param.</p>
+  <h3>VU calibration — <code>vu.ini</code></h3>
+  <pre>[vu]
+min_db=-40
+max_db=3
+frames=101</pre>
+  <p>The DSP provides a ballistic (attack/release) level in dB; the GUI maps it to a frame via this
+  calibration. 0 VU ≈ -18 dBFS.</p>
+  <h3>Knob tuning — <code>knobs.ini</code></h3>
+  <pre>[trim]
+curve=linear
+[volume]
+curve=log</pre>
+  <p>Per-function taper/curve so you can tune the desk like an old engineer.</p>
+</div></section>
 
-<section id="gui">
-  <div class="container">
-    <h2>GUI (clap.gui)</h2>
-    <p>The plugin embeds a native child window into the host's editor:</p>
-    <ul>
-      <li><strong>Windows:</strong> Win32 child HWND, GDI painting, PNG artwork via <code>pngload.pas</code>.</li>
-      <li><strong>Linux:</strong> X11 window, <code>XReparentWindow</code> embed, Xlib drawing, <code>GuiPump</code> for events.</li>
-      <li><strong>macOS:</strong> Cocoa <code>NSView</code> subclass (Objective-C runtime + CoreGraphics).</li>
-    </ul>
-    <p>If <code>background.png</code> and <code>knob.png</code> are present (loaded from the working
-    directory) they are drawn; otherwise a generated knob is shown. The knob updates the gain on
-    vertical drag.</p>
-    <div class="note">
-      The macOS Cocoa view is best-effort and must be verified on a Mac; the Windows and Linux
-      builds are compile-verified.
-    </div>
-  </div>
-</section>
+<section><div class="container">
+  <h2>State &amp; Build</h2>
+  <p><code>clap.state</code> saves the gain + window size. Build with <code>./build_all.bat</code>
+  (CLAP + Windows VST3 + Deploy). macOS/Linux VST3 are native clap-wrapper builds.</p>
+</div></section>
 
-<section id="state">
-  <div class="container">
-    <h2>State (clap.state)</h2>
-    <p><code>save</code>/<code>load</code> persist a 24-byte, version-2 record:</p>
-    <pre>'C''H''S''1' | version(2) | gain(double) | width(uint32) | height(uint32)</pre>
-    <p>So sessions and presets recall both the knob value and the window size. The magic + version are
-    validated on load.</p>
-  </div>
-</section>
-
-<section id="build">
-  <div class="container">
-    <h2>Building</h2>
-    <h3>CLAP (all targets)</h3>
-    <pre>./build_all.bat            # win64, linux-x64, macos-intel, macos-aarch64
-./build_all.bat --check    # verify toolchain only</pre>
-    <p>Artifacts land in <code>dist/&lt;target&gt;/</code> and version-stamped copies in
-    <code>Deploy/</code>.</p>
-
-    <h3>VST3 (Windows, via clap-wrapper)</h3>
-    <p>Clone the SDKs into <code>deps/</code> (already done in this repo):</p>
-    <pre>deps/clap          # CLAP SDK
-deps/vst3sdk       # VST3 SDK 3.7.x (3.8.x fails on GCC)
-deps/clap-wrapper  # clap-wrapper</pre>
-    <p><code>build_all.bat</code> then builds <code>dist/win64/clap_skeleton.vst3</code> automatically
-    (needs CMake + Ninja + a C++ compiler). macOS AU/VST3 and Linux VST3 are built with the same
-    clap-wrapper command on those OSes.</p>
-    <div class="warning">
-      Use VST3 SDK <strong>3.7.x</strong> with GCC/MinGW — 3.8.x fails with an ambiguous
-      <code>iid</code>. clap-wrapper is built with <code>-Wno-deprecated-declarations</code>.
-    </div>
-  </div>
-</section>
-
-<section id="install">
-  <div class="container">
-    <h2>Installing</h2>
-    <h3>CLAP</h3>
-    <ul>
-      <li>Windows: <code>%LOCALAPPDATA%\Programs\Common\CLAP\</code></li>
-      <li>Linux: <code>~/.clap/</code> or <code>/usr/lib/clap/</code></li>
-      <li>macOS: <code>~/Library/Audio/Plug-Ins/CLAP/</code> or <code>/Library/Audio/Plug-Ins/CLAP/</code></li>
-    </ul>
-    <h3>VST3</h3>
-    <ul>
-      <li>Windows: <code>C:\Program Files\Common Files\VST3\</code></li>
-      <li>Linux: <code>~/.vst3/</code> or <code>/usr/lib/vst3/</code></li>
-      <li>macOS: <code>~/Library/Audio/Plug-Ins/VST3/</code> or <code>/Library/Audio/Plug-Ins/VST3/</code></li>
-    </ul>
-    <p>Rescan plugins in your DAW. The plugin appears as <strong>Chameleon Skeleton</strong>.</p>
-  </div>
-</section>
-
-<footer>
-  <div class="container">
-    <p>ChameleonSkeleton — a CLAP audio plugin skeleton in FreePascal.</p>
-    <p>
-      <a href="index.html">Overview</a> ·
-      <a href="https://github.com/smallbutfine/ChameleonSkeleton">GitHub</a> ·
-      <a href="https://github.com/free-audio/clap">CLAP</a> ·
-      <a href="https://github.com/free-audio/clap-wrapper">clap-wrapper</a>
-    </p>
-  </div>
-</footer>
-
+<footer><div class="container">
+  <p>ChameleonConsole — a 17-era console channelstrip in FreePascal.</p>
+  <p><a href="index.html">Overview</a> · <a href="manual.html">Manual</a> · <a href="https://github.com/smallbutfine/ChameleonConsole">GitHub</a></p>
+</div></footer>
 </body>
 </html>

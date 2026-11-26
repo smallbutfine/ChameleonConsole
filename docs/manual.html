@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChameleonConsole — Manual</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.crossbar{background:#0d1117;border-bottom:1px solid #30363d;padding:10px 20px;text-align:center;font-size:.85em;letter-spacing:.5px}
+.crossbar a{color:#8b949e;text-decoration:none;padding:4px 10px;transition:color .2s;font-weight:500}
+.crossbar a:hover{color:#58a6ff}.crossbar-sep{color:#30363d;margin:0 6px}
+</style>
+</head>
+<body>
+<div class="crossbar">
+  <a href="https://smallbutfine.github.io/ChameleonTools/">ChameleonTools</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/ChameleonDrummer/">Drummer</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/TaraDSP/">TaraDSP</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/stringselectorapp/">StringSelector</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/ChameleonRecorder/">Recorder</a><span class="crossbar-sep">|</span>
+  <a href="https://smallbutfine.github.io/ChameleonConsole/">Console</a>
+</div>
+<header><div class="container">
+  <h1><img src="chameleon.jpg" alt="Chameleon" style="width:48px;height:48px;border-radius:50%;vertical-align:middle;margin-right:10px;border:2px solid #30363d;"/>CHAMELEON<span class="accent">CONSOLE</span></h1>
+  <p class="subtitle">Manual</p>
+  <nav><a href="index.html">Overview</a><a href="docs.html">Docs</a></nav>
+</div></header>
+
+<section><div class="container">
+  <h2>Quick Start</h2>
+  <ol>
+    <li>Flash the image / install the plugin (CLAP or VST3) into your DAW's plugin folder.</li>
+    <li>Insert ChameleonConsole on a channel.</li>
+    <li><strong>Click the era label</strong> (under the VU) to cycle console eras until the tone is right.</li>
+    <li>Drag the knobs: Trim, Drive, HPF/LPF, EQ, Lux/Gloss, Tape, Volume.</li>
+    <li>Watch the ballistic VU; the DAW value follows the knob.</li>
+  </ol>
+</div></section>
+
+<section><div class="container">
+  <h2>The Knobs</h2>
+  <table>
+    <thead><tr><th>Knob</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td>Trim</td><td>Input gain (±24 dB) into the strip.</td></tr>
+      <tr><td>Drive</td><td>Preamp drive/saturation (0–100%).</td></tr>
+      <tr><td>HPF / LPF</td><td>High/low-pass filter frequency.</td></tr>
+      <tr><td>EQ Lo/Mid/Hi</td><td>Frequency + gain per band.</td></tr>
+      <tr><td>Lux / Gloss</td><td>Character/air controls (0–1).</td></tr>
+      <tr><td>Tape</td><td>Tape emulation on/off.</td></tr>
+      <tr><td>Volume</td><td>Output gain (-24…12 dB).</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<section><div class="container">
+  <h2>Era Switch &amp; VU</h2>
+  <p>The label under the VU shows the current console (e.g. <em>Neve 1073</em>). <strong>Click it</strong>
+  to switch to the next era — the background, knobs and VU change to that era's set. The VU is ballistic
+  (real attack/release) and calibrated by <code>vu.ini</code>.</p>
+  <h3>Tuning the desk</h3>
+  <p>Edit <code>knobs.ini</code> in an era folder to change a knob's taper/curve (linear/log/reverse) —
+  like an old engineer tweaking the console to taste.</p>
+</div></section>
+
+<section><div class="container">
+  <h2>Install</h2>
+  <ul>
+    <li><strong>CLAP:</strong> <code>%LOCALAPPDATA%\Programs\Common\CLAP\</code> (Win), <code>~/.clap/</code> (Linux), <code>~/Library/Audio/Plug-Ins/CLAP/</code> (mac).</li>
+    <li><strong>VST3:</strong> <code>C:\Program Files\Common Files\VST3\</code> (Win), <code>~/.vst3/</code> (Linux), <code>~/Library/Audio/Plug-Ins/VST3/</code> (mac).</li>
+  </ul>
+  <p>Rescan plugins in your DAW. The strip appears as <strong>Chameleon Console</strong>.</p>
+</div></section>
+
+<footer><div class="container">
+  <p>ChameleonConsole — a 17-era console channelstrip in FreePascal.</p>
+  <p><a href="index.html">Overview</a> · <a href="docs.html">Docs</a> · <a href="https://github.com/smallbutfine/ChameleonConsole">GitHub</a></p>
+</div></footer>
+</body>
+</html>
