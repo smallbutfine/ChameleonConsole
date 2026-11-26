@@ -5,7 +5,9 @@ interface
 
 uses
   SysUtils, ctypes,
-  Math;
+  Math, IniFiles
+  {$IFDEF MSWINDOWS}, Windows{$ENDIF}
+  {$IFDEF DARWIN}, dl{$ENDIF};
 
 const
   METER_RB_SIZE = 256;
@@ -91,6 +93,10 @@ type
     VU_Value: Double;
     VU_SampleCounter: Integer;
     VU_UpdateInterval: Integer;
+
+    // --- Per-channel analog inaccuracy (age/tolerance drift) ---
+    Inaccuracy: Double;   { per-instance random value in [-1,1] }
+    RngState: UInt64;     { per-instance PRNG state }
   end;
   PDSPInstance = ^TDSPInstance;
 
@@ -428,6 +434,91 @@ const
 // PLUGIN CORE IMPLEMENTIERUNG
 // =============================================================================
 
+var
+  g_InaccuracyPct: array[0..16] of Double;
+  g_InaccuracyLoaded: Boolean = False;
+  g_InstanceCounter: UInt64 = 0;
+
+function EraName(i: Integer): ShortString;
+begin
+  case i of
+    0: Result:='neve'; 1: Result:='api'; 2: Result:='ssl'; 3: Result:='isa';
+    4: Result:='mackie'; 5: Result:='redd'; 6: Result:='ua'; 7: Result:='telefunken';
+    8: Result:='helios'; 9: Result:='hybrid'; 10: Result:='rca'; 11: Result:='detroit';
+    12: Result:='studer'; 13: Result:='polar'; 14: Result:='harrison'; 15: Result:='trident';
+    16: Result:='mci';
+  else Result:='neve'; end;
+end;
+
+{ Directory of the loaded plugin, so the DSP can read inaccuracy.ini. }
+function DllDir: ShortString;
+{$IFDEF MSWINDOWS}
+var mbi: MEMORY_BASIC_INFORMATION; h: HMODULE; buf: array[0..MAX_PATH] of Char;
+begin
+  VirtualQuery(@instantiate_dsp, @mbi, SizeOf(mbi));
+  h := HMODULE(mbi.AllocationBase);
+  FillChar(buf, SizeOf(buf), 0);
+  GetModuleFileNameA(h, buf, MAX_PATH);
+  Result := ExtractFilePath(StrPas(buf));
+end;
+{$ELSE}
+{$IFDEF DARWIN}
+var info: dl_info; p: Pointer;
+begin
+  p := @DllDir;
+  if dladdr(p, @info) <> 0 then
+    Result := ExtractFilePath(StrPas(info.dli_fname))
+  else Result := '';
+end;
+{$ELSE}
+var f: TextFile; line: ShortString; p: Integer;
+begin
+  Result := '';
+  AssignFile(f, '/proc/self/maps');
+  Reset(f);
+  try
+    while not Eof(f) do
+    begin
+      ReadLn(f, line);
+      if Pos('ChameleonConsole', line) > 0 then
+      begin
+        p := Pos('/', line);
+        if p > 0 then begin Result := ExtractFilePath(Copy(line, p, Length(line))); Break; end;
+      end;
+    end;
+  finally CloseFile(f); end;
+end;
+{$ENDIF}
+{$ENDIF}
+
+{ Load per-era inaccuracy percentages from inaccuracy.ini (once). }
+procedure LoadInaccuracyTable;
+var ini: TIniFile; i: Integer; path: ShortString;
+begin
+  if g_InaccuracyLoaded then Exit;
+  g_InaccuracyLoaded := True;
+  for i := 0 to 16 do g_InaccuracyPct[i] := 0.05;  { default 5% }
+  path := DllDir + 'inaccuracy.ini';
+  if (path <> '') and FileExists(path) then
+  begin
+    ini := TIniFile.Create(path);
+    try
+      for i := 0 to 16 do
+        g_InaccuracyPct[i] := ini.ReadFloat(EraName(i), 'pct', 0.05);
+    finally ini.Free; end;
+  end;
+end;
+
+{ xorshift64 -> [0,1) }
+function NextRand(var state: UInt64): Double;
+begin
+  if state = 0 then state := 1;
+  state := state xor (state shl 13);
+  state := state xor (state shr 7);
+  state := state xor (state shl 17);
+  Result := (state shr 11) * (1.0 / 9007199254740992.0);
+end;
+
 function instantiate_dsp(const descriptor: Pointer; rate: double; bundle_path: PAnsiChar; const features: PPointer): Pointer; cdecl;
 var
   Self: PDSPInstance;
@@ -437,6 +528,12 @@ begin
   New(Self);
   FillChar(Self^, SizeOf(TDSPInstance), 0);
   Self^.SampleRate := rate;
+
+  { Per-channel analog inaccuracy: a unique random value per instance. }
+  LoadInaccuracyTable;
+  Inc(g_InstanceCounter);
+  Self^.RngState := g_InstanceCounter * 6364136223846793005 + UInt64(PtrUInt(Self));
+  Self^.Inaccuracy := NextRand(Self^.RngState) * 2.0 - 1.0;
 
   // VU-Ballistik vorbereiten (werden pro Sample in UpdateVUMeterFast gelesen)
   Self^.VU_RMS := 0.0;
@@ -539,10 +636,10 @@ begin
   Mode := CurrentStripMode; // Alias für VU-Meter
 
   // --- Mode-spezifische Transformer-Parameter laden ---
-  InputCoreSat := ModeParamsTable[Mode].InputCoreSat;
+  InputCoreSat := ModeParamsTable[Mode].InputCoreSat * (1.0 + Self^.Inaccuracy * g_InaccuracyPct[Mode]);
   InputAsym    := ModeParamsTable[Mode].InputAsym;
   InputHyst    := ModeParamsTable[Mode].InputHyst;
-  OutCoreSat   := ModeParamsTable[Mode].OutCoreSat;
+  OutCoreSat   := ModeParamsTable[Mode].OutCoreSat * (1.0 + Self^.Inaccuracy * g_InaccuracyPct[Mode]);
   OutAsym      := ModeParamsTable[Mode].OutAsym;
   OutHyst      := ModeParamsTable[Mode].OutHyst;
 
@@ -766,7 +863,7 @@ begin
       
       // Mid Q: Mode-abhängig
       if Mode = 16 then
-        RCAMidQ := Max(0.8, 3.0 - (MidFreq / 4000.0)) // MCI: freq-dependent Q
+        RCAMidQ := Math.Max(0.8, 3.0 - (MidFreq / 4000.0)) // MCI: freq-dependent Q
       else
         RCAMidQ := 0.55; // Standard
       
