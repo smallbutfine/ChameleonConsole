@@ -30,6 +30,7 @@ Source: "..\Assets\*"; DestDir: "{code:GetCLAPDir}\Assets"; Components: clap; Fl
 Source: "..\README.md"; DestDir: "{code:GetCLAPDir}"; Components: clap; Flags: ignoreversion
 ; VST3 proxy goes to its own standard folder
 Source: "..\clap_skeleton.vst3"; DestDir: "{code:GetVST3Dir}"; Components: vst3; Flags: ignoreversion
+Source: "..\Assets\*"; DestDir: "{code:GetVST3Dir}\Assets"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Code]
 { Per-user (no admin) or system-wide (admin), chosen via the standard
