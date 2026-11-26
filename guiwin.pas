@@ -107,6 +107,29 @@ begin
   DeleteDC(mem);
 end;
 
+var
+  g_dllDir: ShortString = '';
+
+function DllDir: ShortString;
+var
+  mbi: MEMORY_BASIC_INFORMATION;
+  h: HMODULE;
+  buf: array[0..MAX_PATH] of Char;
+begin
+  if g_dllDir <> '' then Exit(g_dllDir);
+  VirtualQuery(@EraName, @mbi, SizeOf(mbi));
+  h := HMODULE(mbi.AllocationBase);
+  FillChar(buf, SizeOf(buf), 0);
+  GetModuleFileNameA(h, buf, MAX_PATH);
+  g_dllDir := ExtractFilePath(StrPas(buf));
+  Result := g_dllDir;
+end;
+
+function AssetPath(name: ShortString): ShortString;
+begin
+  Result := DllDir + 'assets\' + name;
+end;
+
 procedure PaintClient(hwnd: HWND; gw: PGuiWin);
 var
   ps: PAINTSTRUCT;
@@ -119,9 +142,9 @@ var
 begin
   { lazy-load artwork: knob + vu once, background per console era }
   if gw^.knobBmp = nil then
-    gw^.knobBmp := pointer(LoadPngToHBitmap(PAnsiChar('assets/knob.png')));
+    path := AssetPath('knob.png'); gw^.knobBmp := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
   if gw^.vuBmp = nil then
-    gw^.vuBmp := pointer(LoadPngToHBitmap(PAnsiChar('assets/vu.png')));
+    path := AssetPath('vu.png'); gw^.vuBmp := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
   if gw^.console <> nil then
   begin
     era := Round(gw^.console^);
@@ -131,7 +154,7 @@ begin
     begin
       gw^.loadedConsole := era;
       if gw^.bgBmp <> nil then DeleteObject(HBITMAP(gw^.bgBmp));
-      path := 'assets/bg_' + EraName(era) + '.png';
+      path := AssetPath('bg_' + EraName(era) + '.png');
       gw^.bgBmp := pointer(LoadPngToHBitmap(PAnsiChar(@path[1])));
     end;
   end;
