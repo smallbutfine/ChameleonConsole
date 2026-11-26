@@ -117,6 +117,17 @@ if "%T_OS%"=="win64" (
     if "%T_OS%"=="linux" set "PATH=%CROSS_BIN_DIR%\%T_OS%-%T_CPU%;%PATH%"
 )
 
+REM --- Stage the ELF dynamic linker where the Windows-hosted ld.exe resolves
+REM     the absolute /lib64/ld-linux-x86-64.so.2 path (current-drive root).
+REM     The console non-Windows GUI is a stub, so FPC emits that loader as an
+REM     INPUT and omits libc; the skeleton links X11/libc and needs no staging.
+if "%T_OS%"=="linux" (
+    set "CROSSLIB=%CROSS_BIN_DIR%\..\lib\%T_CPU%-%T_OS%"
+    set "DRV=%ROOT:~0,2%"
+    if not exist "!DRV!\lib64" mkdir "!DRV!\lib64"
+    copy /y "!CROSSLIB!\lib64\ld-linux-x86-64.so.2" "!DRV!\lib64\ld-linux-x86-64.so.2" >nul
+)
+
 REM --- Compile the library ---
 echo [Lib] Compiling %LPR_FILE%...
 pushd "%ROOT%"
@@ -140,6 +151,7 @@ if errorlevel 1 goto :target_failed
 
 echo [%T_NAME%] complete.
 set "RESULT_%T_NAME%=OK"
+call :cleanup_linux_loader
 goto :eof
 
 :target_failed
@@ -147,6 +159,7 @@ echo.
 echo *** TARGET %T_NAME% FAILED ***
 set "RESULT_%T_NAME%=FAIL"
 popd 2>nul
+call :cleanup_linux_loader
 goto :eof
 
 REM ============================================================
@@ -259,6 +272,15 @@ if not exist "%ROOT%\Deploy" mkdir "%ROOT%\Deploy"
 copy /y "%OUT_ROOT%\win64\clap_skeleton.vst3" "%ROOT%\Deploy\!LIB_NAME!-!DETECTED_VERSION!-win64.vst3" >nul
 echo   OK: Deploy VST3
 exit /b 0
+
+REM ============================================================
+:cleanup_linux_loader
+if not "%T_OS%"=="linux" goto :eof
+if defined DRV (
+    del /q "!DRV!\lib64\ld-linux-x86-64.so.2" 2>nul
+    rmdir "!DRV!\lib64" 2>nul
+)
+goto :eof
 
 REM ============================================================
 :verify_tools
