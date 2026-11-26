@@ -1,106 +1,164 @@
-# CLAP Skeleton (Lazarus / Free Pascal DLL)
+# Chameleon Console
 
-Minimal, compilable **CLAP** audio-effect plugin written in Pascal. It is a
-passthrough (silence-in → silence-out / input copied to output) with the full
-CLAP entry → factory → plugin wiring in place, ready for you to drop your DSP
-into `plugin_process`.
+A mono **console channelstrip** audio plugin that changes its *colour* — both
+tonally and visually — across **17 classic console eras**. The DSP and the
+bitmap GUI are written in **Free Pascal / Lazarus**; the artwork (backgrounds,
+knob sprite-strips, VU meters) is data-driven, so the desk can be re-skinned or
+re-calibrated without touching code.
 
-ABI translated from the official headers (free-audio/clap, CLAP 1.2.x).
+![Chameleon Console](docs/mockup.png)
 
-## Files
-- `clap.pas` — CLAP ABI types (core + params + events + gui + state).
-- `clapplugin.pas` — entry, factory, plugin, params, state, gui wiring, gain DSP.
-- `guiwin.pas` — embedded plugin window: Win32 (GDI), Linux/X11, macOS stub.
-- `pngload.pas` — PNG → HBITMAP decoder (fcl-image, Win32).
-- `hostcb.pas` — FPC-mode helper to call cdecl proc-vars (Delphi-mode FPC bug).
-- `clap_skeleton.lpr` — the `library` that exports `clap_entry`.
-- `clap_skeleton.dll` — built x64 DLL (exports `clap_entry`).
+- **Formats:** CLAP (native) and VST3 (via clap-wrapper). AUv2 optional.
+- **Platforms:** Windows (x64), Linux (x64 / arm), macOS (Intel / Apple Silicon).
+- **GUI:** embedded plugin window — Win32 (GDI), Linux (X11), macOS (Cocoa).
+- **License:** MIT (see `LICENSE`).
 
-## Build
-From this directory, with Free Pascal:
+---
+
+## Features
+
+- **17 console eras**, switchable by clicking the era label under the VU:
+  Neve 1073, API 500, SSL 4000G, Neve ISA, Mackie VLZ, EMI REDD, UA Classic,
+  Telefunken V72, Helios 69, Hybrid, RCA SR-780, Detroit, Studer 169,
+  Polar Nordic, Harrison 32C, Trident A-Range, MCI JH Series.
+- **Per-era artwork** — each era has its own background, 14 knob sprite-strips
+  and a VU strip, so the whole channel changes its look with the era.
+- **15 automatable parameters** (see table below), all exposed to the DAW.
+- **Sprite-strip knobs & VU** — vertical strips (50×50 knob frames, 90×70 VU
+  frames), alpha-blended over the background (round knobs, no black box).
+- **Ballistic VU** with per-era calibration via `vu.ini` (`min_db`, `max_db`,
+  `frames`).
+- **Per-knob taper** via `knobs.ini` (`linear` / `log` / `reverse`) — "tune the
+  desk" like an old-school engineer.
+- **Clean, side-by-side install** — per-user or system-wide, CLAP and/or VST3,
+  with a clean-install option (see below).
+
+---
+
+## Channelstrip parameters
+
+| # | Name | Range | Default |
+|---|------|-------|---------|
+| 0 | Console (era) | 0–16 | Neve 1073 |
+| 1 | Trim | −24 … +24 dB | 0 |
+| 2 | Drive | 0 … 100 | 0 |
+| 3 | HPF | 0 … 500 Hz | 20 |
+| 4 | LPF | 1000 … 20000 Hz | 10000 |
+| 5 | EQ Lo Freq | 20 … 500 Hz | 80 |
+| 6 | EQ Lo Gain | −15 … +15 dB | 0 |
+| 7 | EQ Mid Freq | 80 … 8000 Hz | 1000 |
+| 8 | EQ Mid Gain | −15 … +15 dB | 0 |
+| 9 | EQ Hi Freq | 500 … 20000 Hz | 5000 |
+| 10 | EQ Hi Gain | −15 … +15 dB | 0 |
+| 11 | Lux | 0 … 1 | 0 |
+| 12 | Gloss | 0 … 1 | 0 |
+| 13 | Tape | 0 … 1 | 0 |
+| 14 | Volume | −24 … +12 dB | +8 |
+
+The **Console** parameter selects the era; the GUI label under the VU also cycles
+it on click.
+
+---
+
+## Installation
+
+The Windows installer offers:
+
+- **Per-user** (no admin) or **system-wide** (admin) — your choice.
+- **CLAP**, **VST3**, or **both**.
+- **Clean install** (default) or in-place upgrade.
+
+Standard plugin locations used:
+
+| Format | Per-user | System |
+|--------|----------|--------|
+| CLAP | `%LOCALAPPDATA%\Programs\Common\CLAP\ChameleonConsole\` | `%CommonProgramFiles%\CLAP\ChameleonConsole\` |
+| VST3 | `%LOCALAPPDATA%\Programs\Common\VST3\` | `%CommonProgramFiles%\VST3\` |
+
+On Linux/macOS, copy the `.clap` bundle (or the CLAP/VST3 from the release
+archive) into your DAW's plugin folder. The artwork must sit next to the plugin
+(the installers handle this automatically).
+
+---
+
+## Usage
+
+1. Load **Chameleon Console** on a mono track in your DAW.
+2. Click the **era label** (under the VU) to cycle the 17 consoles — the whole
+   channel re-skins and the DSP colour changes.
+3. Drag a **knob** vertically to change its parameter (automatable).
+4. The **VU** shows the output level with the era's calibration.
+
+---
+
+## Customising the desk
+
+All artwork and calibration live in `Assets/<era>/`:
 
 ```
-# 64-bit (modern DAWs)
-"C:\fpcupdeluxe\fpc\bin\i386-win32\fpc.exe" -Px86_64 -O2 clap_skeleton.lpr
-
-# 32-bit
-"C:\fpcupdeluxe\fpc\bin\i386-win32\fpc.exe" -O2 clap_skeleton.lpr
+Assets/<era>/
+  background.png        full channel background (90×852)
+  knobs/<function>.png  vertical knob sprite-strip (50×50 frames)
+  vu.png                vertical VU sprite-strip (90×70 frames)
+  vu.ini                VU calibration: min_db, max_db, frames
+  knobs.ini             per-knob taper: linear | log | reverse
 ```
 
-Or with Lazarus: create a `Library` project, add `clap.pas` + `clapplugin.pas`,
-set the library name to `clap_skeleton`, and build.
+Knob functions: `trim, drive, hpf, lpf, eq_lo_f, eq_lo_g, eq_mid_f, eq_mid_g,
+eq_hi_f, eq_hi_g, lux, gloss, tape, volume`. Replace a strip or edit the `.ini`
+files to re-tune the desk — no rebuild required.
 
-The output is `clap_skeleton.dll`. The host resolves the exported symbol
-`clap_entry` (a `clap_plugin_entry_t` **variable**, not a function).
+---
 
-## Install / test
-Copy the DLL into a CLAP search path, e.g. on Windows:
-- `%LOCALAPPDATA%\Programs\Common\CLAP\`
-- `%COMMONPROGRAMFILES%\CLAP\`
+## Building from source
 
-or set `CLAP_PATH` to its folder. Then rescan plugins in a CLAP-capable host
-(Bitwig, Reaper, Studio One, FL Studio). It appears as
-**“Chameleon Skeleton”** (id `com.example.chameleonskeleton`).
+Requirements: Free Pascal (fpcupdeluxe with the x86_64 / aarch64 / arm
+cross-compilers), and for VST3 the clap-wrapper + CLAP/VST3 SDKs under `deps/`.
 
-## What's implemented
-- **clap.params**: one automatable `Gain` parameter (0..1, default 0.5),
-  with `count/get_info/get_value/value_to_text/text_to_value/flush`.
-  Incoming `CLAP_EVENT_PARAM_VALUE` events are applied in `process()` and
-  `flush()`, and the gain is multiplied into the audio. When the GUI knob
-  changes the gain it calls `host->request_callback`; `on_main_thread` then
-  requests a process cycle, during which `process()` emits
-  `PARAM_GESTURE_BEGIN` / `PARAM_VALUE` / `PARAM_GESTURE_END` to `out_events`
-  so the DAW value tracks the knob.
-- **clap.gui**: real **Win32** embedded window (`guiwin.pas`): creates a child
-  HWND, embeds it into the host HWND via `set_parent`, paints a background +
-  a gain knob (GDI), and updates the gain on vertical drag. If `background.png`
-  and `knob.png` are present (loaded from the working directory via `pngload.pas`)
-  they are alpha-blended in; otherwise a generated knob is drawn. The knob
-  updates the gain and the host is notified (see params below).
+```bat
+:: verify the toolchain
+build_all.bat --check
 
-## Wrappers (more formats)
-`build_all.bat` has a `:wrap` stage that uses
-[clap-wrapper](https://github.com/free-audio/clap-wrapper) to turn the CLAP into
-a **VST3**. It auto-uses a `deps/` checkout if present, otherwise it skips
-cleanly. To build the Windows VST3 it needs (already cloned into `deps/` here):
-- `deps/clap-wrapper`, `deps/clap` (CLAP SDK), `deps/vst3sdk` (VST3 SDK **3.7.x** —
-  3.8.x fails on GCC with an ambiguous `iid`), and `cmake` + Ninja + a C++ compiler.
+:: build all targets + packages (win64, linux-x64, macos-intel, macos-aarch64)
+build_all.bat
+```
 
-The Windows VST3 is produced as `dist/win64/clap_skeleton.vst3` and copied to
-`Deploy/`. Notes:
-- Wrappers are **platform-native**: this builds the **Windows VST3**. Build the
-  **macOS AU/VST3** and **Linux VST3** with the same clap-wrapper command on
-  those OSes (CMake can't cross-build them from Windows).
-- **AUv2** is optional: add `-DCLAP_WRAPPER_BUILD_AUV2=ON` + an `AudioUnitSDK`.
-- **AAX** is intentionally not supported. **LV2** is not a clap-wrapper target.
+Artifacts (version-stamped) land in `Deploy/`:
 
-## Platform status
-- **Windows (win64):** builds via `build_all.bat`, `clap_entry` exported (`.clap` = the DLL). Compile-verified.
-- **Linux (x64):** builds via `build_all.bat`, `clap_entry` in the ELF `.dynsym`
-  (`.clap` = the `.so`). Compile-verified (loads as a CLAP host).
-- **macOS (intel/arm64):** builds into `.clap` bundles, `_clap_entry` exported.
-  The **Cocoa GUI is best-effort and UNVERIFIED at runtime** — build/test on a Mac.
+- `ChameleonConsole-<ver>-win64.zip` + `ChameleonConsole-<ver>-win64-setup.exe`
+- `ChameleonConsole-<ver>-linux-x64.tar.gz`
+- `ChameleonConsole-<ver>-macos-intel.zip`, `...-macos-aarch64.zip`
+- `ChameleonConsole-<ver>-win64.vst3`
 
-Build all four with `CI=true ./build_all.bat` (add `NO_VERSION_BUMP=1` to keep the
-version). `linux-arm` (32-bit) is intentionally not built (the image is 64-bit).
-- **clap.state**: `save`/`load` persist the gain **and the GUI size** as a
-  24-byte record (`'C','H','S','1'` magic + version 2 + gain double + width +
-  height), so sessions/presets recall the knob and window size.
-  `plugin_get_extension` returns `@g_state` for `"clap.state"`.
+`NO_VERSION_BUMP=1` builds the current version without rewriting it.
 
-## Where to put your DSP
-- `plugin_process` in `clapplugin.pas` — read `proc^.audio_inputs`, write
-  `proc^.audio_outputs`, `proc^.frames_count` frames. Replace the passthrough
-  copy with your DSP call.
-- `plugin_activate` — you get `sample_rate`, `min/max_frames_count`; prepare
-  your DSP here.
-- `plugin_get_extension` — return `@g_params`, `@g_gui`, `@g_state`, … once you
-  implement those extensions (params for knobs, gui for the bitmap editor,
-  state for save/restore).
+---
 
-## Notes
-- `clap_entry` is exported as a **variable** via the `exports` clause. If a
-  particular host/toolchain cannot see it, add a `.def` file exporting
-  `clap_entry` and link with `-kDEF:clap.def`.
-- The ABI structs must stay in the exact field order of the C headers; only the
-  subset needed for a basic effect is declared here.
+## Project structure
+
+```
+clap_skeleton.lpr        library entry (exports clap_entry)
+clapplugin.pas           CLAP entry/factory/plugin/params/state/gui wiring
+ChannelStripDSP.pas      the DSP (17-era channelstrip)
+guiwin.pas               embedded GUI: Win32 / X11 / Cocoa
+pngload.pas              PNG → HBITMAP (Win32)
+hostcb.pas               cdecl callback helpers
+clap.pas                 CLAP ABI types
+installer/               Inno Setup installer.iss
+tools/                   host harness, zip helpers
+Assets/<era>/            artwork + ini calibration
+docs/                    manual & web docs (EN/DE/ES/FR/PT/RU/ZH)
+build_all.bat            multi-target build + packaging
+```
+
+---
+
+## Documentation
+
+A full manual and web docs live in [`docs/`](docs/) (English plus DE/ES/FR/PT/RU/ZH).
+
+---
+
+## License
+
+MIT — see [`LICENSE`](LICENSE). Copyright (c) 2026 Martin Haverland.

@@ -31,6 +31,7 @@ Name: "clean"; Description: "Clean install (remove the previous version first)"
 Source: "..\ChameleonConsole.clap"; DestDir: "{code:GetCLAPDir}"; Components: clap; Flags: ignoreversion
 Source: "..\Assets\*"; DestDir: "{code:GetCLAPDir}\Assets"; Components: clap; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "..\README.md"; DestDir: "{code:GetCLAPDir}"; Components: clap; Flags: ignoreversion
+Source: "..\LICENSE"; DestDir: "{code:GetCLAPDir}"; Components: clap; Flags: ignoreversion skipifsourcedoesntexist
 ; VST3 proxy goes to its own standard folder
 Source: "..\ChameleonConsole.vst3"; DestDir: "{code:GetVST3Dir}"; Components: vst3; Flags: ignoreversion
 Source: "..\Assets\*"; DestDir: "{code:GetVST3Dir}\Assets"; Components: vst3; Flags: ignoreversion recursesubdirs createallsubdirs
