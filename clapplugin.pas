@@ -187,10 +187,10 @@ begin if (api<>nil) and ((StrComp(api,CLAP_WINDOW_API_WIN32)=0) or (StrComp(api,
 function gui_get_preferred_api(plugin:pointer; api:PPAnsiChar; f:PClapBool):clap_bool; cdecl;
 begin if api<>nil then api^:=PAnsiChar(CLAP_WINDOW_API_WIN32); if f<>nil then f^:=False; Result:=True; end;
 function gui_create(plugin:pointer; api:PAnsiChar; f:clap_bool):clap_bool; cdecl;
-var pd:PPluginData; begin pd:=PPluginData(PClapPlugin(plugin)^.plugin_data); pd^.gw.gain:=@pd^.params[P_VOLUME]; pd^.gw.console:=@pd^.params[P_CONSOLE]; pd^.gw.params:=@pd^.params[0]; pd^.gw.host:=pd^.host; pd^.gw.loadedConsole:=-1; Result:=GuiCreate(pd^.gw,800,600); end;
+var pd:PPluginData; begin pd:=PPluginData(PClapPlugin(plugin)^.plugin_data); pd^.gw.gain:=@pd^.params[P_VOLUME]; pd^.gw.console:=@pd^.params[P_CONSOLE]; pd^.gw.params:=@pd^.params[0]; pd^.gw.host:=pd^.host; pd^.gw.loadedConsole:=-1; Result:=GuiCreate(pd^.gw,90,852); end;
 procedure gui_destroy(plugin:pointer); cdecl; begin GuiDestroy(PPluginData(PClapPlugin(plugin)^.plugin_data)^.gw); end;
 function gui_set_scale(plugin:pointer; s:c_double):clap_bool; cdecl; begin Result:=True; end;
-function gui_get_size(plugin:pointer; w:PClapSize; h:PClapSize):clap_bool; cdecl; begin if w<>nil then w^:=800; if h<>nil then h^:=600; Result:=True; end;
+function gui_get_size(plugin:pointer; w:PClapSize; h:PClapSize):clap_bool; cdecl; begin if w<>nil then w^:=90; if h<>nil then h^:=852; Result:=True; end;
 function gui_can_resize(plugin:pointer):clap_bool; cdecl; begin Result:=False; end;
 function gui_get_resize_hints(plugin:pointer; h:PClapGuiResizeHints):clap_bool; cdecl; begin Result:=False; end;
 function gui_adjust_size(plugin:pointer; w:PClapSize; h:PClapSize):clap_bool; cdecl; begin Result:=True; end;

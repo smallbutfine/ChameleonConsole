@@ -51,7 +51,7 @@ uses Windows, SysUtils, hostcb, pngload, IniFiles;
 const
   GWLP_USERDATA = -21;
   STRIP_W = 90;
-  STRIP_H = 600;
+  STRIP_H = 852;
   LABEL_Y = 80;
   LABEL_H = 24;
   NUM_KNOBS = 14;
@@ -104,19 +104,25 @@ begin
 end;
 
 { Draw a horizontal sprite-strip frame (square frames) into (x,y). }
+function AlphaBlend(dest: HDC; x1, y1, w1, h1: Integer; src: HDC;
+  x2, y2, w2, h2: Integer; blend: BLENDFUNCTION): BOOL; stdcall;
+  external 'msimg32.dll' name 'AlphaBlend';
+
 procedure DrawSprite(dc: HDC; bmp: HBITMAP; frame, frames, x, y: Integer);
 var
-  mem: HDC; old: HGDIOBJ; bm: BITMAP; fw: Integer;
+  mem: HDC; old: HGDIOBJ; bm: BITMAP; fh: Integer; bf: BLENDFUNCTION;
 begin
   if bmp = 0 then Exit;
   GetObject(bmp, SizeOf(BITMAP), @bm);
   if frames < 1 then frames := 1;
-  fw := bm.bmWidth div frames;
-  if fw <= 0 then Exit;
+  fh := bm.bmHeight div frames;
+  if fh <= 0 then Exit;
   if frame < 0 then frame := 0; if frame >= frames then frame := frames-1;
   mem := CreateCompatibleDC(dc);
   old := SelectObject(mem, bmp);
-  BitBlt(dc, x, y, fw, bm.bmHeight, mem, frame*fw, 0, SRCCOPY);
+  bf.BlendOp := AC_SRC_OVER; bf.BlendFlags := 0;
+  bf.SourceConstantAlpha := 255; bf.AlphaFormat := AC_SRC_ALPHA;
+  AlphaBlend(dc, x, y, bm.bmWidth, fh, mem, 0, frame*fh, bm.bmWidth, fh, bf);
   SelectObject(mem, old);
   DeleteDC(mem);
 end;
@@ -258,7 +264,7 @@ begin
     begin
       if gw^.knobBmps[i] = nil then Continue;
       GetObject(HBITMAP(gw^.knobBmps[i]), SizeOf(BITMAP), @bm);
-      frames := bm.bmWidth div bm.bmHeight; if frames < 1 then frames := 1;
+      frames := bm.bmHeight div bm.bmWidth; if frames < 1 then frames := 1;
       if gw^.params <> nil then
         knobFrame := Round(ApplyCurve(Clamp01(PSampleF(gw^.params)[KnobLayout[i].param]), gw^.knobCurve[i]) * (frames-1))
       else knobFrame := 0;
@@ -270,7 +276,7 @@ begin
     if gw^.vuBmp <> nil then
     begin
       GetObject(HBITMAP(gw^.vuBmp), SizeOf(BITMAP), @bm);
-      frames := bm.bmWidth div bm.bmHeight; if frames < 1 then frames := 1;
+      frames := gw^.vuFrames; if frames < 1 then frames := 1;
       if gw^.vu <> nil then vuFrame := Round(Clamp01(gw^.vu^) * (frames-1)) else vuFrame := 0;
       DrawSprite(dc, HBITMAP(gw^.vuBmp), vuFrame, frames, 0, 8);
     end;
@@ -640,7 +646,7 @@ end;
 
 procedure Redraw(gw: PGuiWin);
 var dpy: PDisplay; w: TWindow; g: TGC; img: PXImage;
-    era, i, frames, knobFrame, vuFrame, fw, fh, sx, x, y: Integer;
+    era, i, frames, knobFrame, vuFrame, fw, fh, sx, sy, x, y: Integer;
     bgd, kd, vd: TDecoded;
     s: ShortString; font: PXFontStruct;
 begin
@@ -677,16 +683,16 @@ begin
     if gw^.knobImg[i]=nil then Continue;
     kd := PDecoded(gw^.knobImg[i])^;
     if kd.h<=0 then Continue;
-    frames := kd.w div kd.h; if frames<1 then frames:=1;
+    frames := kd.h div kd.w; if frames<1 then frames:=1;
     if gw^.params<>nil then
       knobFrame := Round(ApplyCurve(Clamp01(PSampleF(gw^.params)[KnobLayout[i].param]), gw^.knobCurve[i])*(frames-1))
     else knobFrame:=0;
     if knobFrame<0 then knobFrame:=0; if knobFrame>=frames then knobFrame:=frames-1;
-    fw := kd.w div frames; fh := kd.h; sx := knobFrame*fw;
+    fw := kd.w; fh := kd.h div frames; sy := knobFrame*fh;
     for y:=0 to fh-1 do
       for x:=0 to fw-1 do
         BlendPixel(gw, KnobLayout[i].x + x, KnobLayout[i].y + y,
-          kd.data[y*kd.w + sx + x]);
+          kd.data[(sy+y)*kd.w + x]);
   end;
 
   { VU on top }
@@ -695,13 +701,13 @@ begin
     vd := PDecoded(gw^.vuImg)^;
     if vd.h>0 then
     begin
-      frames := vd.w div vd.h; if frames<1 then frames:=1;
+      frames := gw^.vuFrames; if frames<1 then frames:=1;
       if gw^.vu<>nil then vuFrame := Round(Clamp01(gw^.vu^)*(frames-1)) else vuFrame:=0;
       if vuFrame<0 then vuFrame:=0; if vuFrame>=frames then vuFrame:=frames-1;
-      fw:=vd.w div frames; fh:=vd.h; sx:=vuFrame*fw;
+      fw:=vd.w; fh:=vd.h div frames; sy:=vuFrame*fh;
       for y:=0 to fh-1 do
         for x:=0 to fw-1 do
-          BlendPixel(gw, x, 8+y, vd.data[y*vd.w + sx + x]);
+          BlendPixel(gw, x, 8+y, vd.data[(sy+y)*vd.w + x]);
     end;
   end;
 
