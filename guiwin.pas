@@ -899,6 +899,8 @@ function class_addMethod(cls: id; name: SEL; imp: Pointer; types: MarshaledAStri
 procedure objc_registerClassPair(cls: id); cdecl; external 'libobjc.A.dylib';
 function objc_setAssociatedObject(object_: id; key: Pointer; value: id; policy: LongWord): id; cdecl; external 'libobjc.A.dylib';
 function objc_getAssociatedObject(object_: id; key: Pointer): id; cdecl; external 'libobjc.A.dylib';
+function objc_msgSend_stret(dest: Pointer; receiver: id; op: SEL): Pointer; cdecl; varargs; external 'libobjc.A.dylib' name 'objc_msgSend_stret';
+function objc_msgSend_point(receiver: id; op: SEL): CGPoint; cdecl; varargs; external 'libobjc.A.dylib' name 'objc_msgSend';
 
 procedure CGContextSetRGBFillColor(ctx: Pointer; r, g, b, a: CGFloat); cdecl; external '/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices' name 'CGContextSetRGBFillColor';
 procedure CGContextFillRect(ctx: Pointer; rect: CGRect); cdecl; external '/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices' name 'CGContextFillRect';
@@ -1173,15 +1175,32 @@ begin
   end;
 end;
 
+function GetViewPoint(view, ev: id): CGPoint;
+var selLoc, selConv: SEL; wl: CGPoint;
+begin
+  selLoc := sel_registerName('locationInWindow');
+  selConv := sel_registerName('convertPoint:fromView:');
+{$IFDEF CPUX86_64}
+  objc_msgSend_stret(@wl, ev, selLoc);
+  objc_msgSend_stret(@Result, view, selConv, wl, Pointer(nil));
+{$ELSE}
+  wl := objc_msgSend_point(ev, selLoc);
+  Result := objc_msgSend_point(view, selConv, wl, Pointer(nil));
+{$ENDIF}
+end;
+
 procedure chameleon_mouseDown(self: id; _cmd: SEL; ev: id); cdecl;
-var g: PGuiWin; x, y, i, era: Integer;
+var g: PGuiWin; pt: CGPoint; x, y, i, era: Integer;
 begin
   g := PGuiWin(objc_getAssociatedObject(self, g_key));
   if g = nil then Exit;
-  x := 20; y := 0;  { precise coords come from the event; best-effort }
+  pt := GetViewPoint(self, ev);
+  x := Round(pt.x);
+  y := STRIP_H - Round(pt.y);   { Cocoa origin is bottom-left; flip to top-left }
   g^.dragging := False;
   for i:=0 to NUM_KNOBS-1 do
-    if (y>=KnobLayout[i].y) and (y<=KnobLayout[i].y+50) then
+    if (x>=KnobLayout[i].x) and (x<=KnobLayout[i].x+50) and
+       (y>=KnobLayout[i].y) and (y<=KnobLayout[i].y+50) then
     begin
       g^.dragging:=True; g^.dragParam:=KnobLayout[i].param; g^.startY:=y;
       if g^.params<>nil then g^.startVal:=PSampleF(g^.params)[g^.dragParam];
@@ -1198,11 +1217,13 @@ begin
 end;
 
 procedure chameleon_mouseDragged(self: id; _cmd: SEL; ev: id); cdecl;
-var g: PGuiWin; ng: Double;
+var g: PGuiWin; pt: CGPoint; y: Integer; ng: Double;
 begin
   g := PGuiWin(objc_getAssociatedObject(self, g_key));
   if (g = nil) or (not g^.dragging) or (g^.params = nil) then Exit;
-  ng := Clamp01(g^.startVal + 0.01);
+  pt := GetViewPoint(self, ev);
+  y := STRIP_H - Round(pt.y);
+  ng := Clamp01(g^.startVal + (g^.startY - y)/200.0);
   PSampleF(g^.params)[g^.dragParam] := ng;
   if g^.gain<>nil then g^.gain^ := ng;
   RequestCallbackHost(g^.host);
