@@ -262,7 +262,7 @@ cmake --build "!WRAP_BUILD!"
 if errorlevel 1 ( echo   ERROR: wrapper build failed & exit /b 1 )
 
 set "VST3_FOUND="
-for /r "!WRAP_BUILD!" %%F in (*.vst3) do set "VST3_FOUND=%%F"
+for /f "delims=" %%F in ('dir /b /s "!WRAP_BUILD!\*.vst3" 2^>nul') do set "VST3_FOUND=%%F"
 if not defined VST3_FOUND ( echo   WARNING: no .vst3 produced & exit /b 0 )
 if not exist "%OUT_ROOT%\win64" mkdir "%OUT_ROOT%\win64"
 copy /y "!VST3_FOUND!" "%OUT_ROOT%\win64\clap_skeleton.vst3" >nul
