@@ -17,6 +17,7 @@ type
     loadedConsole: Integer;
     bgBmp: pointer;
     knobBmps: array[0..13] of pointer; // per-function knob sprite strips
+    knobCurve: array[0..13] of Integer; // 0=linear 1=log 2=reverse
     vuBmp: pointer;        // VU sprite strip
     vuMinDb: Double; vuMaxDb: Double; vuFrames: Integer;
     dragging: Boolean;
@@ -161,6 +162,38 @@ begin
   end;
 end;
 
+function CurveLog(x: Double): Double;
+const k = 9.0;
+begin
+  if x <= 0 then Exit(0);
+  Result := Ln(1.0 + k * x) / Ln(1.0 + k);
+end;
+
+function ApplyCurve(x: Double; curve: Integer): Double;
+begin
+  case curve of
+    1: Result := CurveLog(x);
+    2: Result := 1.0 - x;
+  else Result := x; end;
+end;
+
+procedure ReadKnobsConfig(path: ShortString; var curves: array of Integer);
+var ini: TIniFile; i: Integer;
+begin
+  for i := 0 to 13 do curves[i] := 0;
+  if (path <> '') and FileExists(path) then
+  begin
+    ini := TIniFile.Create(path);
+    try
+      for i := 0 to 13 do
+      begin
+        if SameText(ini.ReadString('knob'+IntToStr(i),'curve','linear'),'log') then curves[i]:=1
+        else if SameText(ini.ReadString('knob'+IntToStr(i),'curve','linear'),'reverse') then curves[i]:=2;
+      end;
+    finally ini.Free; end;
+  end;
+end;
+
 procedure PaintClient(hwnd: HWND; gw: PGuiWin);
 var
   ps: PAINTSTRUCT;
@@ -217,7 +250,7 @@ begin
       GetObject(HBITMAP(gw^.knobBmps[i]), SizeOf(BITMAP), @bm);
       frames := bm.bmWidth div bm.bmHeight; if frames < 1 then frames := 1;
       if gw^.params <> nil then
-        knobFrame := Round(Clamp01(PSampleF(gw^.params)[KnobLayout[i].param]) * (frames-1))
+        knobFrame := Round(ApplyCurve(Clamp01(PSampleF(gw^.params)[KnobLayout[i].param]), gw^.knobCurve[i]) * (frames-1))
       else knobFrame := 0;
       DrawSprite(dc, HBITMAP(gw^.knobBmps[i]), knobFrame, frames,
         KnobLayout[i].x, KnobLayout[i].y);
