@@ -2,10 +2,7 @@ unit clapplugin;
 { ChameleonConsole - CLAP channelstrip wired to ChannelStripDSP. }
 {$IFDEF FPC}{$MODE Delphi}{$H+}{$ENDIF}
 interface
-uses clap;
-
-var
-  clap_entry: clap_plugin_entry_t;
+uses clap, clapentry;
 
 implementation
 uses SysUtils, guiwin, hostcb, ChannelStripDSP;

@@ -642,7 +642,7 @@ begin
   for i := 0 to sample_count - 1 do
   begin
     // Drive-Gain auf Input
-    InputSample := PSampleF(InBuf)[i] * DriveFactor;
+    InputSample := PSampleF(InBuf)^[i] * DriveFactor;
     
     // Tape Flutter LFO
     Self^.TapePhase := Self^.TapePhase + TapePhaseInc;
@@ -872,10 +872,10 @@ begin
           ProcessSample := ProcessSample + Self^.DnBuffer[(Self^.DnPos + (k shl 1)) and 127] * Self^.FIRCoeffs[k shl 1];
 
         // Finale Verstärkung + Hard-Clipper
-        PSampleF(OutBuf)[i] := HardClip(ProcessSample * MakeupGain * VolGain);
+        PSampleF(OutBuf)^[i] := HardClip(ProcessSample * MakeupGain * VolGain);
 
         // VU-Meter aktualisieren
-        UpdateVUMeterFast(Self^, PSampleF(OutBuf)[i], Mode);
+        UpdateVUMeterFast(Self^, PSampleF(OutBuf)^[i], Mode);
         Inc(Self^.VU_SampleCounter);
         if Self^.VU_SampleCounter >= Self^.VU_UpdateInterval then
         begin
