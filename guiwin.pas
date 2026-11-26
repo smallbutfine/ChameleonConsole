@@ -40,6 +40,8 @@ const
   GWLP_USERDATA = -21;
   STRIP_W = 90;
   STRIP_H = 600;
+  LABEL_Y = 80;
+  LABEL_H = 24;
   NUM_KNOBS = 14;
 
 type
@@ -130,6 +132,19 @@ begin
   Result := DllDir + 'assets\' + name;
 end;
 
+
+function EraDisplay(i: Integer): ShortString;
+begin
+  case i of
+    0: Result:='Neve 1073'; 1: Result:='API 500'; 2: Result:='SSL 4000G';
+    3: Result:='Neve ISA'; 4: Result:='Mackie VLZ'; 5: Result:='EMI REDD';
+    6: Result:='UA Classic'; 7: Result:='Telefunken V72'; 8: Result:='Helios 69';
+    9: Result:='Hybrid'; 10: Result:='RCA SR-780'; 11: Result:='Detroit';
+    12: Result:='Studer 169'; 13: Result:='Polar Nordic'; 14: Result:='Harrison 32C';
+    15: Result:='Trident A-Range'; 16: Result:='MCI JH Series';
+  else Result:='Neve 1073'; end;
+end;
+
 procedure PaintClient(hwnd: HWND; gw: PGuiWin);
 var
   ps: PAINTSTRUCT;
@@ -138,6 +153,7 @@ var
   bm: BITMAP;
   era, i, frames, knobFrame, vuFrame: Integer;
   path: ShortString;
+  s: ShortString;
   cx, cy: Integer;
 begin
   { lazy-load artwork: knob + vu once, background per console era }
@@ -199,6 +215,14 @@ begin
       if gw^.vu <> nil then vuFrame := Round(Clamp01(gw^.vu^) * (frames-1)) else vuFrame := 0;
       DrawSprite(dc, HBITMAP(gw^.vuBmp), vuFrame, frames, 13, 8);
     end;
+
+    if gw^.console <> nil then
+    begin
+      s := EraDisplay(Round(gw^.console^));
+      SetBkMode(dc, TRANSPARENT);
+      SetTextColor(dc, RGB(230, 230, 230));
+      TextOut(dc, 8, LABEL_Y, PAnsiChar(@s[1]), Length(s));
+    end;
   finally
     EndPaint(hwnd, @ps);
   end;
@@ -224,7 +248,7 @@ begin
               if gw^.params<>nil then gw^.startVal:=PSampleF(gw^.params)[gw^.dragParam];
               Break;
             end;
-          if (not gw^.dragging) and (gw^.console<>nil) then
+          if (not gw^.dragging) and (gw^.console<>nil) and (y>=LABEL_Y) and (y<=LABEL_Y+LABEL_H) then
           begin
             era := (Round(gw^.console^) + 1) mod 17;
             gw^.console^ := era;
