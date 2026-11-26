@@ -101,7 +101,7 @@ echo ==================================================
 REM --- Select compiler ---
 if "%T_OS%"=="win64" (
     set "CC=%FPC%"
-    set "CC_FLAGS=-O2"
+    set "CC_FLAGS=-O2 -Mdelphi"
 ) else (
     if "%T_CPU%"=="x86_64" (
         set "CC=%FPC_DIR%\ppcrossx64.exe"
