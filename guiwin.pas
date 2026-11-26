@@ -953,12 +953,18 @@ begin
 end;
 
 function DllDir: ShortString;
-var info: dl_info; p: Pointer;
+var info: dl_info; p: Pointer; path: ShortString; k: Integer;
 begin
   if g_dllDir<>'' then Exit(g_dllDir);
   p := @DllDir;
   if dladdr(p, @info)<>0 then
-    g_dllDir := ExtractFilePath(StrPas(info.dli_fname))
+  begin
+    path := ExtractFilePath(StrPas(info.dli_fname));
+    { inside a .clap bundle resources live in Contents/Resources, not MacOS }
+    k := Pos('Contents/MacOS/', path);
+    if k>0 then path := Copy(path, 1, k-1) + 'Contents/Resources/';
+    g_dllDir := path;
+  end
   else g_dllDir := '';
   Result := g_dllDir;
 end;
