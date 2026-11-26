@@ -57,20 +57,20 @@ type
   plugin param array (see clapplugin P_*). }
 const
   KnobLayout: array[0..NUM_KNOBS-1] of TKnobSpec = (
-    (name:'trim';     param:1;  x:13; y:70),
-    (name:'drive';    param:2;  x:13; y:140),
-    (name:'hpf';      param:3;  x:13; y:210),
-    (name:'lpf';      param:4;  x:13; y:280),
-    (name:'eq_lo_f';  param:5;  x:13; y:350),
-    (name:'eq_lo_g';  param:6;  x:13; y:420),
-    (name:'eq_mid_f'; param:7;  x:13; y:490),
-    (name:'eq_mid_g'; param:8;  x:13; y:560),
-    (name:'eq_hi_f';  param:9;  x:13; y:630),
-    (name:'eq_hi_g';  param:10; x:13; y:700),
-    (name:'lux';      param:11; x:13; y:770),
-    (name:'gloss';    param:12; x:13; y:840),
-    (name:'tape';     param:13; x:13; y:910),
-    (name:'volume';   param:14; x:13; y:980)
+    (name:'trim';     param:1;  x:20; y:110),
+    (name:'drive';    param:2;  x:20; y:162),
+    (name:'hpf';      param:3;  x:20; y:214),
+    (name:'lpf';      param:4;  x:20; y:266),
+    (name:'eq_lo_f';  param:5;  x:20; y:318),
+    (name:'eq_lo_g';  param:6;  x:20; y:370),
+    (name:'eq_mid_f'; param:7;  x:20; y:422),
+    (name:'eq_mid_g'; param:8;  x:20; y:474),
+    (name:'eq_hi_f';  param:9;  x:20; y:526),
+    (name:'eq_hi_g';  param:10; x:20; y:578),
+    (name:'lux';      param:11; x:20; y:630),
+    (name:'gloss';    param:12; x:20; y:682),
+    (name:'tape';     param:13; x:20; y:734),
+    (name:'volume';   param:14; x:20; y:786)
   );
 
 var
