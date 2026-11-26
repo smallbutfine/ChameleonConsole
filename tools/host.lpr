@@ -1,5 +1,5 @@
 program host;
-{ Minimal CLAP host harness for Windows: loads clap_skeleton.clap, embeds its GUI
+{ Minimal CLAP host harness for Windows: loads ChameleonConsole.clap, embeds its GUI
   into a window, and feeds a 440 Hz test tone so the VU/knobs animate.
   Build: fpc -Px86_64 -O2 host.lpr   (needs clap.pas in the same dir) }
 {$mode Delphi}{$H+}
@@ -75,8 +75,8 @@ var
   h: c_uint32;
 begin
   inst := GetModuleHandle(nil);
-  hLib := LoadLibrary(PChar(ExtractFilePath(ParamStr(0)) + 'clap_skeleton.clap'));
-  if hLib = 0 then begin WriteLn('cannot load clap_skeleton.clap'); Exit; end;
+  hLib := LoadLibrary(PChar(ExtractFilePath(ParamStr(0)) + 'ChameleonConsole.clap'));
+  if hLib = 0 then begin WriteLn('cannot load ChameleonConsole.clap'); Exit; end;
   entry := PClapPluginEntry(GetProcAddress(hLib, PAnsiChar('clap_entry')));
   if entry = nil then begin WriteLn('no clap_entry'); Exit; end;
   entry^.init(nil);

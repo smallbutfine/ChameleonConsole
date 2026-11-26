@@ -20,7 +20,7 @@ if not defined ISCC set "ISCC=C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 set "FPC=%FPC_DIR%\fpc.exe"
 set "OUT_ROOT=%ROOT%\dist"
 
-set "LIB_NAME=clap_skeleton"
+set "LIB_NAME=ChameleonConsole"
 if exist "%ROOT%\NAME" set /p LIB_NAME=< "%ROOT%\NAME"
 set "LPR_FILE=%LIB_NAME%.lpr"
 set "APP_NAME=ChameleonConsole"

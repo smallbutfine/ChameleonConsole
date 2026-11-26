@@ -469,7 +469,7 @@ begin
     while not Eof(f) do
     begin
       ReadLn(f, line);
-      if Pos('clap_skeleton', line)>0 then
+      if Pos('ChameleonConsole', line)>0 then
       begin
         p := Pos('/', line);
         if p>0 then
