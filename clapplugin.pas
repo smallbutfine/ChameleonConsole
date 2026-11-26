@@ -250,9 +250,9 @@ initialization
   clap_entry.init:=@entry_init; clap_entry.deinit:=@entry_deinit; clap_entry.get_factory:=@entry_get_factory;
   g_features[0]:=PAnsiChar('audio-effect'); g_features[1]:=nil;
   g_descriptor.version.major:=CLAP_VERSION_MAJOR; g_descriptor.version.minor:=CLAP_VERSION_MINOR; g_descriptor.version.revision:=CLAP_VERSION_REVISION;
-  g_descriptor.id:=PAnsiChar('com.example.chameleonconsole'); g_descriptor.name:=PAnsiChar('Chameleon Console');
-  g_descriptor.vendor:=PAnsiChar('Example'); g_descriptor.url:=PAnsiChar('https://example.com');
-  g_descriptor.manual_url:=nil; g_descriptor.support_url:=nil; g_descriptor.version_str:=PAnsiChar('0.1.0');
+  g_descriptor.id:=PAnsiChar('com.smallbutfine.chameleonconsole'); g_descriptor.name:=PAnsiChar('Chameleon Console');
+  g_descriptor.vendor:=PAnsiChar('smallbutfine'); g_descriptor.url:=PAnsiChar('https://github.com/smallbutfine/ChameleonConsole');
+  g_descriptor.manual_url:=nil; g_descriptor.support_url:=nil; g_descriptor.version_str:=PAnsiChar('1.1.0');
   g_descriptor.description:=PAnsiChar('17-console channelstrip (DSP in Pascal).'); g_descriptor.features:=@g_features;
   g_factory.get_plugin_count:=@factory_get_count; g_factory.get_plugin_descriptor:=@factory_get_descriptor; g_factory.create_plugin:=@factory_create_plugin;
   g_params.count:=@params_count; g_params.get_info:=@params_get_info; g_params.get_value:=@params_get_value;
