@@ -104,13 +104,37 @@ Assets/<era>/
   knobs/<function>.png  vertical knob sprite-strip (50×50 frames)
   vu.png                vertical VU sprite-strip (90×70 frames)
   vu.ini                VU calibration: min_db, max_db, frames
-  inaccuracy.ini        per-era component drift (pct) - see below
+  inaccuracy.ini        per-era component drift (fraction 0..1) - see below
   knobs.ini             per-knob taper: linear | log | reverse
 ```
 
 Knob functions: `trim, drive, hpf, lpf, eq_lo_f, eq_lo_g, eq_mid_f, eq_mid_g,
 eq_hi_f, eq_hi_g, lux, gloss, tape, volume`. Replace a strip or edit the `.ini`
 files to re-tune the desk — no rebuild required.
+
+### Analog inaccuracy (`inaccuracy.ini`)
+
+Each channel (plugin instance) draws a unique random value and the per-era
+saturation coefficients are scaled by `1 + value * pct`, so channels of the
+same console drift slightly differently — like real analogue components.
+
+- **Unit:** `pct` is a **fraction `0..1` where `1.0 = 100%`** (so `0.05` = 5%,
+  *not* `5`). `pct=0` disables drift for that era.
+- Read with the ini unit (`TIniFile`), once, from `Assets/inaccuracy.ini`.
+
+Default values (oriented on real-world component tolerances / age):
+
+| Era | pct | Era | pct |
+|-----|-----|-----|-----|
+| neve | 0.06 | hybrid | 0.05 |
+| api | 0.05 | rca | 0.07 |
+| ssl | 0.03 | detroit | 0.08 |
+| isa | 0.04 | studer | 0.02 |
+| mackie | 0.03 | polar | 0.025 |
+| redd | 0.08 | harrison | 0.02 |
+| ua | 0.06 | trident | 0.04 |
+| telefunken | 0.07 | mci | 0.04 |
+| helios | 0.07 | | |
 
 ---
 
